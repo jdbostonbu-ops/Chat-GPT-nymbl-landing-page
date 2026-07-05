@@ -143,6 +143,7 @@ export default function Home() {
     script: string,
   ) {
     try {
+      const submittedAt = new Date();
       const response = await fetch("/api/zapier", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -151,7 +152,8 @@ export default function Home() {
           script,
           scriptInput,
           requestType: "video_generation",
-          submittedAt: new Date().toISOString(),
+          date: submittedAt.toLocaleDateString("en-US"),
+          submittedAt: submittedAt.toISOString(),
         }),
       });
       const data = (await response.json()) as { ok?: boolean };

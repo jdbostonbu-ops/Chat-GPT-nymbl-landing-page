@@ -139,3 +139,7 @@ Create some space above: "Enter a few details and generate a 60-second social me
 ## Script Builder Larger Spacing Prompt
 
 Create a lot of space because you pushed it against the heading.
+
+## Webhook Date Field Prompt
+
+The form that is sent to webhooks is not sending the date when the form was completed. That is another column in Sheets.

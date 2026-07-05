@@ -7,6 +7,7 @@ type ZapierLeadPayload = {
   phone?: string;
   script?: string;
   requestType?: string;
+  date?: string;
   scriptInput?: {
     promotion?: string;
     vibe?: string;
@@ -31,6 +32,8 @@ export async function POST(request: NextRequest) {
   }
 
   const body = (await request.json()) as ZapierLeadPayload;
+  const submittedAt = cleanInput(body.submittedAt, 40);
+  const date = cleanInput(body.date, 40);
   const payload = {
     name: cleanInput(body.name, 120),
     business: cleanInput(body.business, 140),
@@ -42,7 +45,8 @@ export async function POST(request: NextRequest) {
     presenter: cleanInput(body.scriptInput?.presenter, 80),
     sellingPoint: cleanInput(body.scriptInput?.sellingPoint, 1000),
     requestType: cleanInput(body.requestType, 80),
-    submittedAt: cleanInput(body.submittedAt, 40),
+    date: date || submittedAt.slice(0, 10),
+    submittedAt,
     source: "nymbl-ai-script-builder",
   };
 
