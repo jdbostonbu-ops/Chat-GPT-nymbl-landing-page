@@ -27,6 +27,8 @@ Nymbl is positioned as an automation business landing page that highlights AI so
 
 Created by [jdbostonbu-ops](https://github.com/jdbostonbu-ops)
 
+Live link: [https://chat-gpt-nymbl-landing-page.vercel.app/](https://chat-gpt-nymbl-landing-page.vercel.app/)
+
 ## Stack
 
 - Next.js
