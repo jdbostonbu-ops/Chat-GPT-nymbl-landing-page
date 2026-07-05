@@ -1,10 +1,17 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { plans } from "./plans";
 
 type ScriptPreview = {
   script: string;
+};
+
+type LeadDetails = {
+  name: string;
+  business: string;
+  email: string;
+  phone: string;
 };
 
 const audiences: string[] = [
@@ -65,7 +72,6 @@ const fallbackPreview: ScriptPreview = {
 };
 
 const defaultYoutubeUrl = "https://youtu.be/5cO9hsgMTUg";
-const youtubeEmbedUrl = "https://www.youtube-nocookie.com/embed/5cO9hsgMTUg";
 
 function getPublicUrl(value: string | undefined, fallback: string): string {
   return value && value.length > 0 ? value : fallback;
@@ -74,6 +80,9 @@ function getPublicUrl(value: string | undefined, fallback: string): string {
 export default function Home() {
   const [preview, setPreview] = useState<ScriptPreview>(fallbackPreview);
   const [isLoading, setIsLoading] = useState(false);
+  const [isVideoSending, setIsVideoSending] = useState(false);
+  const [videoMessage, setVideoMessage] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
 
   const bookingUrl = useMemo(
     () => getPublicUrl(process.env.NEXT_PUBLIC_CAL_LINK ?? process.env.NEXT_PUBLIC_CALCOM_URL, "#"),
@@ -85,23 +94,86 @@ export default function Home() {
     [],
   );
 
+  useEffect(() => {
+    const revealItems = Array.from(document.querySelectorAll<HTMLElement>(".section-reveal"));
+
+    if (!("IntersectionObserver" in window)) {
+      revealItems.forEach((item) => item.classList.add("is-visible"));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.18 },
+    );
+
+    revealItems.forEach((item) => observer.observe(item));
+
+    return () => observer.disconnect();
+  }, []);
+
+  function getFormPayload(form: HTMLFormElement) {
+    const formData = new FormData(form);
+    const lead: LeadDetails = {
+      name: String(formData.get("name") || ""),
+      business: String(formData.get("business") || ""),
+      email: String(formData.get("email") || ""),
+      phone: String(formData.get("phone") || ""),
+    };
+    const scriptInput = {
+      promotion: String(formData.get("promotion") || ""),
+      vibe: String(formData.get("vibe") || ""),
+      presenter: String(formData.get("presenter") || ""),
+      sellingPoint: String(formData.get("sellingPoint") || ""),
+    };
+
+    return { lead, scriptInput };
+  }
+
+  async function sendZapierLead(
+    lead: LeadDetails,
+    scriptInput: Record<string, string>,
+    script: string,
+    requestType = "script_generation",
+  ) {
+    try {
+      const response = await fetch("/api/zapier", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...lead,
+          script,
+          scriptInput,
+          requestType,
+          submittedAt: new Date().toISOString(),
+        }),
+      });
+      const data = (await response.json()) as { ok?: boolean };
+      return Boolean(data.ok);
+    } catch {
+      // The preview should still work if the automation handoff is unavailable.
+      return false;
+    }
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsLoading(true);
 
-    const form = new FormData(event.currentTarget);
-    const payload = {
-      promotion: String(form.get("promotion") || ""),
-      vibe: String(form.get("vibe") || ""),
-      presenter: String(form.get("presenter") || ""),
-      sellingPoint: String(form.get("sellingPoint") || ""),
-    };
+    const { lead, scriptInput } = getFormPayload(event.currentTarget);
 
     try {
       const response = await fetch("/api/script", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(scriptInput),
       });
 
       if (!response.ok) {
@@ -110,19 +182,41 @@ export default function Home() {
 
       const data = (await response.json()) as ScriptPreview;
       setPreview(data);
+      await sendZapierLead(lead, scriptInput, data.script);
     } catch {
       setPreview(fallbackPreview);
+      await sendZapierLead(lead, scriptInput, fallbackPreview.script);
     } finally {
       setIsLoading(false);
     }
+  }
+
+  async function handleVideoRequest() {
+    const form = formRef.current;
+
+    if (!form) {
+      return;
+    }
+
+    if (!form.reportValidity()) {
+      return;
+    }
+
+    setIsVideoSending(true);
+    setVideoMessage("");
+
+    const { lead, scriptInput } = getFormPayload(form);
+    const sent = await sendZapierLead(lead, scriptInput, preview.script, "video_generation");
+
+    setVideoMessage(sent ? "Video request sent." : "Video request could not be sent. Please try again.");
+    setIsVideoSending(false);
   }
 
   return (
     <main>
       <nav className="nav">
         <a className="brand" href="#top" aria-label="Nymbl home">
-          <span className="bolt">⚡</span>
-          <span>Nymbl</span>
+          <img src="/nymbl-logo.svg" alt="Nymbl" />
         </a>
         <a className="button button-blue" href={bookingUrl} target="_blank" rel="noreferrer">
           Book a 15-min call
@@ -146,6 +240,7 @@ export default function Home() {
           </div>
           <p className="trust-line">★★★★★ Trusted by owner-operators like you</p>
         </div>
+        <div className="signature-gradient" aria-hidden="true" />
         <div className="hero-light" aria-hidden="true" />
       </section>
 
@@ -182,10 +277,30 @@ export default function Home() {
             </p>
           </div>
 
-          <form className="builder-form" onSubmit={handleSubmit}>
+          <form className="builder-form" ref={formRef} onSubmit={handleSubmit}>
+            <div className="form-row">
+              <label>
+                Name
+                <input name="name" placeholder="e.g. Jordan Lee" maxLength={120} required />
+              </label>
+              <label>
+                Business
+                <input name="business" placeholder="e.g. Lee Realty Group" maxLength={140} required />
+              </label>
+            </div>
+            <div className="form-row">
+              <label>
+                Email
+                <input name="email" type="email" placeholder="e.g. jordan@example.com" maxLength={160} required />
+              </label>
+              <label>
+                Phone number
+                <input name="phone" type="tel" placeholder="e.g. 555-123-4567" maxLength={40} required />
+              </label>
+            </div>
             <label>
               What are you promoting?
-              <input name="promotion" placeholder="e.g. Summer home selling special" maxLength={140} />
+              <input name="promotion" placeholder="e.g. Summer home selling special" maxLength={1000} />
             </label>
             <label>
               Vibe
@@ -197,18 +312,32 @@ export default function Home() {
             </label>
             <label>
               Main selling point
-              <input name="sellingPoint" placeholder="e.g. We sell homes 2x faster" maxLength={140} />
+              <input name="sellingPoint" placeholder="e.g. We sell homes 2x faster" maxLength={1000} />
             </label>
             <button className="button button-yellow" type="submit">
               {isLoading ? "Generating..." : "Generate 60-second script"}
             </button>
           </form>
 
-          <article className="preview-card" aria-live="polite">
-            <p className="eyebrow yellow-text">Your 60-second script</p>
-            <p className="script-output">{preview.script}</p>
-            <small>Use this as a first draft for a social media post.</small>
-          </article>
+          <div className="preview-column">
+            <article className="preview-card" aria-live="polite">
+              <p className="eyebrow yellow-text">Your 60-second script</p>
+              <p className="script-output">{preview.script}</p>
+              <small>Use this as a first draft for a social media post.</small>
+            </article>
+
+            <div className="video-request-actions" aria-live="polite">
+              <button
+                className="button button-yellow video-request-button"
+                type="button"
+                onClick={handleVideoRequest}
+                disabled={isVideoSending || isLoading}
+              >
+                {isVideoSending ? "Sending..." : "Generate my video"}
+              </button>
+              {videoMessage ? <small className="video-request-message">{videoMessage}</small> : null}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -222,12 +351,23 @@ export default function Home() {
             </a>
           </div>
           <div className="video-placeholder">
-            <iframe
-              src={youtubeEmbedUrl}
-              title="AI-powered video example"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
+            <div className="video-mockup" aria-label="AI-powered video screenshot preview">
+              <div className="video-mockup-topbar">
+                <span />
+                <span />
+                <span />
+              </div>
+              <div className="video-mockup-frame">
+                <div className="video-subject">
+                  <span>Offer</span>
+                  <strong>Ready for social</strong>
+                </div>
+                <div className="video-caption">Fresh script. Clear CTA. Built for busy owners.</div>
+                <a className="video-play-button" href={youtubeUrl} aria-label="Watch the AI video example on YouTube">
+                  ▶
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -302,8 +442,7 @@ export default function Home() {
 
       <footer className="footer">
         <a className="brand" href="#top">
-          <span className="bolt">⚡</span>
-          <span>Nymbl</span>
+          <img src="/nymbl-logo.svg" alt="Nymbl" />
         </a>
         <p className="footer-contact">
           Need us immediately? Call <a href="tel:3333333333">333-333-3333</a>. We will answer faster than your marketing to-do list can multiply.

@@ -4,6 +4,7 @@
   --cyan: #00d7e8;
   --pink: #ff0a78;
   --yellow: #ffc400;
+  --orange: #ff7a00;
   --ink: #06111f;
   --white: #ffffff;
   --cloud: #f3f8ff;
@@ -50,16 +51,14 @@ main {
 .brand {
   align-items: center;
   display: inline-flex;
-  font-size: 32px;
-  font-weight: 950;
-  gap: 8px;
-  letter-spacing: -0.06em;
+  flex: 0 0 auto;
   text-decoration: none;
 }
 
-.bolt {
-  color: var(--pink);
-  filter: drop-shadow(5px 0 0 var(--blue));
+.brand img {
+  display: block;
+  height: 44px;
+  width: auto;
 }
 
 .button {
@@ -109,7 +108,8 @@ main {
   background:
     radial-gradient(circle at 82% 42%, rgba(255, 196, 0, 0.92), transparent 9%),
     radial-gradient(circle at 78% 32%, rgba(0, 215, 232, 0.95), transparent 13%),
-    radial-gradient(circle at 88% 48%, rgba(255, 10, 120, 0.92), transparent 18%),
+    radial-gradient(circle at 88% 48%, rgba(255, 122, 0, 0.72), transparent 11%),
+    radial-gradient(circle at 88% 48%, rgba(255, 10, 120, 0.92), transparent 19%),
     linear-gradient(135deg, var(--blue) 0%, var(--deep-blue) 72%);
   color: var(--white);
   display: grid;
@@ -122,6 +122,8 @@ main {
   background:
     repeating-linear-gradient(116deg, transparent 0 18px, rgba(255,255,255,0.18) 19px 21px),
     linear-gradient(112deg, transparent 0 43%, rgba(0, 215, 232, 0.85) 47%, rgba(255, 10, 120, 0.86) 62%, transparent 82%);
+  background-size: 160% 160%;
+  animation: signatureSweep 8s ease-in-out infinite alternate;
   content: "";
   inset: 0;
   mask-image: linear-gradient(90deg, transparent 0 42%, black 54%);
@@ -133,6 +135,18 @@ main {
   max-width: 720px;
   position: relative;
   z-index: 2;
+}
+
+.signature-gradient {
+  animation: signaturePulse 5.8s ease-in-out infinite alternate;
+  background: linear-gradient(90deg, var(--cyan), var(--yellow), var(--orange), var(--pink), var(--blue));
+  background-size: 260% 100%;
+  bottom: 0;
+  height: 9px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  z-index: 3;
 }
 
 .eyebrow {
@@ -269,7 +283,7 @@ blockquote,
 
 .icon-box {
   align-items: center;
-  background: linear-gradient(135deg, var(--blue), var(--pink));
+  background: linear-gradient(135deg, var(--blue), var(--pink), var(--orange));
   border-radius: 14px;
   color: var(--white);
   display: inline-flex;
@@ -334,6 +348,12 @@ input {
   padding: 0 14px;
 }
 
+.form-row {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+}
+
 .preview-card {
   background: var(--ink);
   color: var(--white);
@@ -352,6 +372,34 @@ input {
   color: rgba(255,255,255,0.7);
 }
 
+.preview-column {
+  display: grid;
+  gap: 14px;
+}
+
+.video-request-actions {
+  display: grid;
+  gap: 12px;
+}
+
+.video-request-button {
+  border: 0;
+  width: 100%;
+}
+
+.video-request-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+  transform: none;
+}
+
+.video-request-message {
+  color: var(--white);
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .video-placeholder-grid {
   align-items: center;
   display: grid;
@@ -365,18 +413,121 @@ input {
 
 .video-placeholder {
   aspect-ratio: 16 / 9;
-  background: var(--ink);
+  background:
+    linear-gradient(135deg, rgba(0, 215, 232, 0.32), transparent 35%),
+    linear-gradient(315deg, rgba(255, 10, 120, 0.26), transparent 42%),
+    var(--ink);
   border: 6px solid var(--white);
   box-shadow: 0 26px 70px rgba(6, 17, 31, 0.28);
   min-height: 0;
   overflow: hidden;
+  padding: 18px;
 }
 
-.video-placeholder iframe {
-  border: 0;
-  display: block;
+.video-mockup {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 14px;
+  display: grid;
+  grid-template-rows: auto 1fr;
   height: 100%;
   width: 100%;
+}
+
+.video-mockup-topbar {
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  display: flex;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 14px;
+}
+
+.video-mockup-topbar span {
+  background: var(--yellow);
+  border-radius: 999px;
+  display: block;
+  height: 10px;
+  width: 10px;
+}
+
+.video-mockup-topbar span:nth-child(2) {
+  background: var(--cyan);
+}
+
+.video-mockup-topbar span:nth-child(3) {
+  background: var(--pink);
+}
+
+.video-mockup-frame {
+  align-items: center;
+  background:
+    radial-gradient(circle at 28% 42%, rgba(255, 196, 0, 0.95), transparent 16%),
+    radial-gradient(circle at 70% 30%, rgba(0, 215, 232, 0.72), transparent 18%),
+    linear-gradient(135deg, var(--blue), var(--pink) 56%, var(--orange));
+  display: grid;
+  min-height: 0;
+  overflow: hidden;
+  padding: 28px;
+  position: relative;
+}
+
+.video-subject {
+  background: rgba(6, 17, 31, 0.84);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 18px;
+  color: var(--white);
+  display: grid;
+  gap: 8px;
+  justify-self: start;
+  max-width: 270px;
+  padding: 22px;
+  position: relative;
+  z-index: 2;
+}
+
+.video-subject span {
+  color: var(--yellow);
+  font-size: 13px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.video-subject strong {
+  font-size: clamp(26px, 4vw, 48px);
+  line-height: 0.9;
+}
+
+.video-caption {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 10px;
+  bottom: 24px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 950;
+  left: 24px;
+  max-width: calc(100% - 48px);
+  padding: 12px 14px;
+  position: absolute;
+}
+
+.video-play-button {
+  align-items: center;
+  background: var(--white);
+  border-radius: 999px;
+  box-shadow: 0 18px 48px rgba(6, 17, 31, 0.24);
+  color: var(--pink);
+  display: inline-flex;
+  font-size: 38px;
+  height: 88px;
+  justify-content: center;
+  padding-left: 6px;
+  position: absolute;
+  right: 32px;
+  text-decoration: none;
+  top: 32px;
+  width: 88px;
+  z-index: 3;
 }
 
 .pricing-grid {
@@ -638,7 +789,14 @@ cite {
 }
 
 .section-reveal {
-  animation: fadeUp 650ms ease both;
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 650ms ease, transform 650ms ease;
+}
+
+.section-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 @keyframes ticker {
@@ -656,6 +814,22 @@ cite {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes signaturePulse {
+  to {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes signatureSweep {
+  from {
+    background-position: 0% 50%;
+  }
+
+  to {
+    background-position: 100% 50%;
   }
 }
 
@@ -683,7 +857,12 @@ cite {
   }
 
   .brand {
-    font-size: 26px;
+    max-width: 148px;
+  }
+
+  .brand img {
+    height: 38px;
+    max-width: 100%;
   }
 
   .button {

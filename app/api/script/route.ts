@@ -72,10 +72,10 @@ export async function POST(request: NextRequest) {
   const body = (await request.json()) as Partial<ScriptRequest>;
 
   const input: ScriptRequest = {
-    promotion: cleanInput(body.promotion, 140),
+    promotion: cleanInput(body.promotion, 1000),
     vibe: cleanInput(body.vibe, 80),
     presenter: cleanInput(body.presenter, 80),
-    sellingPoint: cleanInput(body.sellingPoint, 140),
+    sellingPoint: cleanInput(body.sellingPoint, 1000),
   };
 
   const apiKey = process.env.OPENAI_API_KEY;

@@ -53,6 +53,54 @@ Live link: [https://chat-gpt-nymbl-landing-page.vercel.app/](https://chat-gpt-ny
 - No lime green
 - Bold electric blue, cyan, hot pink, amber, and dark ink palette
 
+## The Zapier automation pipeline
+
+The showcase automation on this page turns a visitor's form submission into a rendered AI video
+**and** a captured lead — hands-free. It is a 3-step Zap wired to the landing page's demo form.
+
+### Data flow
+
+```
+Landing page demo form
+  │   name, email, phone, business,
+  │   promoting, vibe, presenter, sellingPoint, script, date
+  ▼
+[ Generate my video ]  ──POST──►  Zapier "Catch Hook" webhook (trigger)
+                                        │
+                        ┌───────────────┴───────────────┐
+                        ▼                               ▼
+             HeyGen: Create a Video           Google Sheets: Create Row
+             From Video Agent                 ("Nymbl Video Requests")
+             → renders the video              → logs the lead
+                        │                               │
+                        ▼                               ▼
+                  video generated                 lead captured
+                  (NOT delivered)                 (your worklist / CRM)
+```
+
+### The three Zap steps
+
+1. **Trigger — Webhooks by Zapier › Catch Hook.**
+   Generates a unique webhook URL. The landing page's **"Generate my video"** button POSTs the
+   full payload to it. (URL lives in `NEXT_PUBLIC_ZAPIER_WEBHOOK_URL`.)
+
+2. **Action — HeyGen › Create a Video From Video Agent.**
+   The webhook's **`script`** field maps into HeyGen's **Prompt**; `vibe` / `presenter` inform the
+   style; duration set to 60s, one-shot session. HeyGen renders the video.
+
+3. **Action — Google Sheets › Create Spreadsheet Row.**
+   Writes the lead to the **Nymbl Video Requests** sheet with columns:
+   `Date | Name | Email | Phone | Business | Promoting | Vibe | Presenter | Script`.
+
+### Critical data separation
+
+Contact fields (**name, email, phone**) are lead-capture data only. They are **never** sent to
+OpenAI and **never** placed in the video script — otherwise the avatar could read them aloud. The
+`/api/generate-script` route receives only the creative brief (`promoting`, `vibe`, `presenter`,
+`sellingPoint`). The full payload (contact info **and** script) goes to the Zapier webhook, where
+HeyGen consumes only the script and Google Sheets stores the contact fields.
+
+
 ## Run locally
 
 ```bash
@@ -69,6 +117,7 @@ NEXT_PUBLIC_CAL_LINK=
 NEXT_PUBLIC_YOUTUBE_URL=
 
 OPENAI_API_KEY=
+NEXT_PUBLIC_ZAPIER_WEBHOOK_URL=
 
 STRIPE_SECRET_KEY=
 STRIPE_PRICE_KICKSTART=
