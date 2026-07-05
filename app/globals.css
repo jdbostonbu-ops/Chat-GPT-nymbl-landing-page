@@ -325,6 +325,10 @@ blockquote,
   line-height: 1.4;
 }
 
+.builder-intro {
+  margin-top: 28px;
+}
+
 .builder-form {
   background: rgba(6, 17, 31, 0.18);
   border: 1px solid rgba(255,255,255,0.2);

@@ -141,7 +141,6 @@ export default function Home() {
     lead: LeadDetails,
     scriptInput: Record<string, string>,
     script: string,
-    requestType = "script_generation",
   ) {
     try {
       const response = await fetch("/api/zapier", {
@@ -151,7 +150,7 @@ export default function Home() {
           ...lead,
           script,
           scriptInput,
-          requestType,
+          requestType: "video_generation",
           submittedAt: new Date().toISOString(),
         }),
       });
@@ -167,7 +166,7 @@ export default function Home() {
     event.preventDefault();
     setIsLoading(true);
 
-    const { lead, scriptInput } = getFormPayload(event.currentTarget);
+    const { scriptInput } = getFormPayload(event.currentTarget);
 
     try {
       const response = await fetch("/api/script", {
@@ -182,10 +181,8 @@ export default function Home() {
 
       const data = (await response.json()) as ScriptPreview;
       setPreview(data);
-      await sendZapierLead(lead, scriptInput, data.script);
     } catch {
       setPreview(fallbackPreview);
-      await sendZapierLead(lead, scriptInput, fallbackPreview.script);
     } finally {
       setIsLoading(false);
     }
@@ -206,7 +203,7 @@ export default function Home() {
     setVideoMessage("");
 
     const { lead, scriptInput } = getFormPayload(form);
-    const sent = await sendZapierLead(lead, scriptInput, preview.script, "video_generation");
+    const sent = await sendZapierLead(lead, scriptInput, preview.script);
 
     setVideoMessage(sent ? "Video request sent." : "Video request could not be sent. Please try again.");
     setIsVideoSending(false);
@@ -271,7 +268,7 @@ export default function Home() {
           <div>
             <p className="eyebrow yellow-text">AI script builder for businesses</p>
             <h2>Generate a social script built around your offer.</h2>
-            <p>
+            <p className="builder-intro">
               Enter a few details and generate a 60-second social media script for your next business post.
               Copy and paste it into your message when you book a call.
             </p>

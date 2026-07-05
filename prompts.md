@@ -115,3 +115,27 @@ Add a favicon that looks like the logo next to the Nymbl wordmark at the top lef
 ## SVG Logo Prompt
 
 Create an SVG logo file with the logo mark and the Nymbl wordmark.
+
+## Webhook Sequence Fix Prompt
+
+The generate 60 second script caused the script to go to the webhook but that is not the sequence. It is supposed to be:
+
+1. User clicks the script button.
+2. OpenAI creates the script.
+3. User decides if they want to generate a video.
+4. User clicks generate video.
+5. That script and info goes to the webhook.
+
+When I clicked the script button and then the generate video button, the entries in Sheets went in twice instead of once. It should only go to webhooks when user clicks generate video.
+
+## Coding Constraints Audit Prompt
+
+Coding constraints: no `any`, no `var`, closure-based functions, user input must be `textContent` to prevent XSS. Check the last code you coded to make sure you did not violate coding constraints.
+
+## Script Builder Spacing Prompt
+
+Create some space above: "Enter a few details and generate a 60-second social media script for your next business post. Copy and paste it into your message when you book a call." because it is too close to the above heading, maybe 5-10px of space.
+
+## Script Builder Larger Spacing Prompt
+
+Create a lot of space because you pushed it against the heading.
