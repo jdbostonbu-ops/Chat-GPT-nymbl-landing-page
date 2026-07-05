@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/nimbl-logo.svg" alt="Nymbl Logo" width="300" />
+  <img src="public/nymbl-logo.svg" alt="Nymbl Logo" width="300" />
 </p>
 
 <p align="center">
