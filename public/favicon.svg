@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Nymbl">
+  <rect width="64" height="64" rx="14" fill="#06111f"/>
+  <path d="M36 4 12 36h16l-4 24 28-36H35l1-20Z" fill="#063bff"/>
+  <path d="M32 4 8 36h16l-4 24 28-36H31l1-20Z" fill="#ff0a78"/>
+  <path d="M31 8 13 33h16l-3 17 18-24H28l3-18Z" fill="#ffc400"/>
+</svg>
